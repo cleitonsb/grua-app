@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Ícone do GuinchoCheck: caminhão guincho com marca de verificação">
+  <rect width="512" height="512" fill="#0F2A43"/>
+  <g transform="translate(-6 18)">
+      <rect x="92" y="296" width="336" height="30" rx="10" fill="#F5A300"/>
+      <path d="M92 296 V232 Q92 220 104 218 L148 210 L184 166 Q190 160 200 160 H254 V296 Z" fill="#F5A300"/>
+      <path d="M168 214 L194 182 H232 V214 Z" fill="#0F2A43"/>
+      <rect x="270" y="258" width="176" height="26" rx="8" fill="#F5A300" transform="rotate(-12 270 284)"/>
+      <path d="M312 296 L340 262" stroke="#F5A300" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <circle cx="152" cy="330" r="38" fill="#0F2A43"/><circle cx="152" cy="330" r="30" fill="#F5A300"/><circle cx="152" cy="330" r="11" fill="#0F2A43"/>
+      <circle cx="352" cy="330" r="38" fill="#0F2A43"/><circle cx="352" cy="330" r="30" fill="#F5A300"/><circle cx="352" cy="330" r="11" fill="#0F2A43"/>
+    </g>
+    <circle cx="382" cy="132" r="58" fill="#FFFFFF"/>
+    <path d="M354 134 L374 154 L412 112" fill="none" stroke="#0F2A43" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

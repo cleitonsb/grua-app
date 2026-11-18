@@ -1,55 +1,83 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://unistyl.es/), etc.
+ * Identidade visual do GuinchoCheck, conforme o protótipo aprovado (spec 005). Há uma única aparência, clara: o
+ * protótipo não tem tema escuro. Os valores e o contraste de cada par estão em
+ * specs/005-identidade-visual-prototipo/data-model.md e são verificados por verificacao/contraste.mjs.
  */
-
-import '@/global.css';
 
 import { Platform } from 'react-native';
 
 export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
+  // Chaves que já existiam (mesmos nomes, valores do protótipo)
+  text: '#101828',
+  textSecondary: '#475467',
+  /** Fundo das telas. */
+  background: '#F3F4F6',
+  /** Superfície de cartões, campos e linhas de lista. */
+  backgroundElement: '#FFFFFF',
+  /** Selecionado, miniatura vazia, avatar das listas. */
+  backgroundSelected: '#E8EEF4',
+  /** Âmbar: botão principal, aba e pílula ativas, indicador de passo, contador de foto. */
+  primary: '#F5A300',
+  /** Texto sobre o âmbar: sempre escuro (branco sobre âmbar tem só 2,1:1). */
+  primaryText: '#101828',
+  danger: '#B42318',
+
+  // Chaves novas
+  /** Texto e ícones sobre azul-marinho, sobre o botão de perigo e sobre marcadores escuros. */
+  branco: '#FFFFFF',
+  /** Cabeçalhos, caixa marcada, botão escuro, texto da aba ativa. */
+  marinho: '#0F2A43',
+  /** Fundo da tela de foto. */
+  marinhoProfundo: '#06182A',
+  /** Trilha da barra de passos e pílula inativa, sobre o cabeçalho. */
+  trilha: '#1E3F5E',
+  /** Subtítulos e texto secundário sobre o cabeçalho. */
+  textoSobreMarinho: '#C9D6E2',
+  /** Borda de cartão e separadores. */
+  borda: '#E3E6EB',
+  /** Borda de campo e de botão secundário. */
+  bordaCampo: '#D0D5DD',
+  /** Placeholder e aba inativa. O protótipo usa #98A2B3 (2,6:1); aqui #667085 (5,0:1), desvio D6 da spec. */
+  placeholder: '#667085',
+  sucesso: '#067647',
+  sucessoFundo: '#ECFDF3',
+  alerta: '#93370D',
+  alertaFundo: '#FEF0C7',
+  /** Fundo dos selos "Inativo" e "Rascunho". */
+  neutroFundo: '#F2F4F7',
 } as const;
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+export type ThemeColor = keyof typeof Colors;
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+/**
+ * Famílias carregadas no layout raiz (useFonts). O peso é escolhido pela família, não por `fontWeight`: com fontes
+ * estáticas, `fontWeight` faria o Android engrossar uma face que já é negrito.
+ */
+export const Fontes = {
+  corpo: 'Inter_400Regular',
+  corpoSemiNegrito: 'Inter_600SemiBold',
+  corpoNegrito: 'Inter_700Bold',
+  titulo: 'SpaceGrotesk_600SemiBold',
+  tituloNegrito: 'SpaceGrotesk_700Bold',
+} as const;
+
+/** Só o tipo `code` do `ThemedText` usa uma fonte monoespaçada. */
+export const Fonts = {
+  mono: Platform.select({ ios: 'ui-monospace', default: 'monospace' }),
+};
+
+export const Raios = {
+  cartao: 14,
+  campo: 12,
+  pequeno: 8,
+  pilula: 999,
+} as const;
+
+export const Alturas = {
+  campo: 48,
+  botaoPrincipal: 52,
+  alvoMinimo: 44,
+} as const;
 
 export const Spacing = {
   half: 2,
@@ -61,5 +89,4 @@ export const Spacing = {
   six: 64,
 } as const;
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
