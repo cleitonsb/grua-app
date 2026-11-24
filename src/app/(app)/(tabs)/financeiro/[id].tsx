@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { Botao } from '@/components/botao';
 import { CabecalhoTela } from '@/components/cabecalho-tela';
@@ -8,6 +8,7 @@ import { Cartao } from '@/components/cartao';
 import { DialogoDeCancelamento } from '@/components/financeiro/dialogo-de-cancelamento';
 import { DialogoDePagamento } from '@/components/financeiro/dialogo-de-pagamento';
 import { LinhaDoHistorico } from '@/components/financeiro/linha-do-historico';
+import { RolagemComTeclado } from '@/components/rolagem-com-teclado';
 import { Selo } from '@/components/selo';
 import { ThemedText } from '@/components/themed-text';
 import { Fontes, MaxContentWidth, Spacing } from '@/constants/theme';
@@ -87,7 +88,7 @@ export default function LancamentoDetalheScreen() {
         acao={lancamento ? <Selo tipo={lancamento.situacao} /> : undefined}
       />
 
-      <ScrollView contentContainerStyle={estilos.conteudo} refreshControl={<RefreshControl refreshing={atualizando} onRefresh={() => void recarregar()} />}>
+      <RolagemComTeclado contentContainerStyle={estilos.conteudo} refreshControl={<RefreshControl refreshing={atualizando} onRefresh={() => void recarregar()} />}>
         <View style={estilos.coluna}>
           {carregando ? <ActivityIndicator /> : null}
 
@@ -131,7 +132,7 @@ export default function LancamentoDetalheScreen() {
               ) : null}
 
               {painel === 'pagamento' ? (
-                <DialogoDePagamento pedirValor={semValor} executando={executando} erroAcao={erroAcao} errosDoCampo={errosDoCampo} aoConfirmar={(dados) => void aoPagar(dados)} aoVoltar={() => setPainel(null)} />
+                <DialogoDePagamento pedirValor={semValor} formaCombinada={lancamento.forma_pagamento} executando={executando} erroAcao={erroAcao} errosDoCampo={errosDoCampo} aoConfirmar={(dados) => void aoPagar(dados)} aoVoltar={() => setPainel(null)} />
               ) : null}
 
               {painel === 'cancelamento' ? (
@@ -165,7 +166,7 @@ export default function LancamentoDetalheScreen() {
             </>
           ) : null}
         </View>
-      </ScrollView>
+      </RolagemComTeclado>
     </View>
   );
 }

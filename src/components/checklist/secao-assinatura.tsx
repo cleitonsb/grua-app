@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { Botao } from '@/components/botao';
@@ -12,81 +13,47 @@ import { formatarDiaEHora } from '@/utils/formatadores';
 interface SecaoAssinaturaProps {
   checklist: Checklist;
   assinatura: UsoDaAssinatura;
-  /** Motorista dono: pode enviar e reenviar. O administrador só consulta. */
+  /** Motorista dono: pode colher a assinatura e reenviar a cópia. O administrador só consulta. */
   podeAgir: boolean;
 }
 
 /**
- * "Assinatura do cliente" (passo 4 e detalhe): o e-mail do cliente (somente leitura), a situação do link e as ações de
- * envio. Antes do envio do checklist, só avisa para onde o link irá depois do envio.
+ * "Assinatura do cliente" (passo 4 e detalhe). A assinatura é opcional e colhida na tela do motorista: antes de
+ * concluir só avisa disso; depois, mostra se o cliente assinou, oferece colher a assinatura que faltou e, assinado, o
+ * PDF e a cópia por e-mail.
  */
 export function SecaoAssinatura({ checklist, assinatura, podeAgir }: SecaoAssinaturaProps) {
   const theme = useTheme();
-  const { estado, carregando, erro, enviando, erroAcao, enviarLink, abrindoPdf, reenviandoCopia, baixarPdf, reenviarCopia } = assinatura;
-  const enviado = checklist.status !== 'rascunho';
-  const emailDoCliente = checklist.cliente?.email_assinatura;
+  const router = useRouter();
+  const { estado, carregando, erro, erroAcao, abrindoPdf, reenviandoCopia, baixarPdf, reenviarCopia } = assinatura;
+  const concluido = checklist.status !== 'rascunho';
+  const assinado = estado?.situacao === 'assinado';
 
-  const situacao = estado?.situacao;
-  const emailExibido = estado?.link?.destinatario ?? emailDoCliente ?? 'Sem e-mail cadastrado';
+  if (!concluido) {
+    return (
+      <View style={estilos.secao}>
+        <ThemedText type="subtitle">Assinatura do cliente</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Opcional. Ao concluir, o app abre o quadro para o cliente assinar com o dedo, na tela do motorista.
+        </ThemedText>
+      </View>
+    );
+  }
 
-  const titulo =
-    !enviado || situacao === 'sem_envio'
-      ? 'Aguardando envio'
-      : situacao === 'enviado'
-        ? `Link enviado em ${estado?.link?.enviado_em ? formatarDiaEHora(estado.link.enviado_em) : '—'}`
-        : situacao === 'falhou'
-          ? 'Não foi possível enviar'
-          : situacao === 'expirado'
-            ? 'Link expirado'
-            : situacao === 'assinado'
-              ? `Assinado em ${estado?.assinada_em ? formatarDiaEHora(estado.assinada_em) : '—'}`
-              : 'Carregando…';
-
-  const detalhe = !enviado
-    ? 'Depois do envio, o link será enviado para este e-mail e o status muda para “Aguardando assinatura”.'
-    : situacao === 'enviado' && estado?.link?.expira_em
-      ? `O cliente tem até ${formatarDiaEHora(estado.link.expira_em)} para assinar.`
-      : situacao === 'falhou'
-        ? 'O e-mail não saiu. Confira o endereço do cliente e tente de novo.'
-        : situacao === 'expirado'
-          ? 'O prazo para assinar acabou. Envie um novo link.'
-          : situacao === 'assinado'
-            ? 'O cliente assinou e o checklist está concluído.'
-            : situacao === 'sem_envio'
-              ? 'O link ainda não foi enviado ao cliente.'
-              : undefined;
-
-  const corDoPonto =
-    situacao === 'assinado' ? theme.sucesso : situacao === 'falhou' ? theme.danger : situacao === 'enviado' ? theme.alerta : theme.placeholder;
-  const corDoTitulo = situacao === 'falhou' ? theme.danger : theme.text;
-
-  const rotuloDoBotao =
-    situacao === 'falhou' ? 'Tentar de novo' : situacao === 'enviado' ? 'Reenviar link' : situacao === 'expirado' ? 'Enviar novo link' : 'Enviar link para o e-mail';
-  const mostrarBotao = enviado && podeAgir && !carregando && situacao !== undefined && situacao !== 'assinado';
-  const restantes = estado?.link?.reenvios_restantes;
+  const titulo = carregando || !estado ? 'Carregando…' : assinado ? `Assinado em ${estado.assinada_em ? formatarDiaEHora(estado.assinada_em) : '—'}` : 'Sem assinatura do cliente';
 
   return (
     <View style={estilos.secao}>
       <ThemedText type="subtitle">Assinatura do cliente</ThemedText>
 
-      <View style={estilos.campo}>
-        <ThemedText type="smallBold">Enviar link para o e-mail</ThemedText>
-        <View style={[estilos.email, { backgroundColor: theme.backgroundElement, borderColor: theme.bordaCampo }]}>
-          <ThemedText selectable={false}>{emailExibido}</ThemedText>
-        </View>
-        <ThemedText type="small" themeColor="textSecondary">
-          O cliente abre o link no celular, revisa o checklist e assina com o dedo. Para corrigir o e-mail, atualize o cadastro do cliente.
-        </ThemedText>
-      </View>
-
       <Cartao style={estilos.estado}>
         <View accessibilityLiveRegion="polite" style={estilos.estadoLinha}>
-          <View style={[estilos.ponto, { backgroundColor: corDoPonto }]} />
+          <View style={[estilos.ponto, { backgroundColor: assinado ? theme.sucesso : theme.placeholder }]} />
           <View style={estilos.estadoTextos}>
-            <ThemedText style={[estilos.estadoTitulo, { color: corDoTitulo }]}>{titulo}</ThemedText>
-            {detalhe ? (
+            <ThemedText style={estilos.estadoTitulo}>{titulo}</ThemedText>
+            {estado && !assinado ? (
               <ThemedText type="small" themeColor="textSecondary">
-                {detalhe}
+                A assinatura é opcional: o checklist já está concluído.
               </ThemedText>
             ) : null}
           </View>
@@ -104,16 +71,20 @@ export function SecaoAssinatura({ checklist, assinatura, podeAgir }: SecaoAssina
           </ThemedText>
         ) : null}
 
-        {situacao === 'assinado' && estado ? (
+        {podeAgir && estado?.pode_assinar ? (
+          <Botao titulo="Colher assinatura do cliente" onPress={() => router.push(`/checklists/${checklist.id}/assinar`)} />
+        ) : null}
+
+        {assinado && estado ? (
           <View style={estilos.copia}>
             <ThemedText type="small" themeColor="textSecondary" accessibilityLiveRegion="polite">
               {estado.copia === null
-                ? 'A cópia por e-mail será enviada em instantes.'
+                ? 'Sem cópia por e-mail: o cliente não tem e-mail cadastrado ou ela ainda será enviada.'
                 : estado.copia.situacao === 'enviado'
                   ? `Cópia enviada${estado.copia.enviada_em ? ` em ${formatarDiaEHora(estado.copia.enviada_em)}` : ''}.`
                   : estado.copia.situacao === 'pendente'
                     ? 'Enviando a cópia…'
-                    : 'Não foi possível enviar a cópia.'}
+                    : 'Não foi possível enviar a cópia por e-mail.'}
             </ThemedText>
             {estado.pdf_disponivel ? <Botao titulo="Baixar PDF" carregando={abrindoPdf} onPress={() => void baixarPdf()} /> : null}
             {podeAgir && estado.pdf_disponivel ? (
@@ -126,22 +97,6 @@ export function SecaoAssinatura({ checklist, assinatura, podeAgir }: SecaoAssina
             ) : null}
           </View>
         ) : null}
-
-        {mostrarBotao ? (
-          <>
-            <Botao
-              titulo={rotuloDoBotao}
-              variante={situacao === 'enviado' ? 'secundario' : 'primario'}
-              carregando={enviando}
-              onPress={() => void enviarLink()}
-            />
-            {restantes !== undefined && situacao === 'enviado' ? (
-              <ThemedText type="small" themeColor="textSecondary">
-                {restantes === 1 ? '1 reenvio restante' : `${restantes} reenvios restantes`} nesta hora.
-              </ThemedText>
-            ) : null}
-          </>
-        ) : null}
       </Cartao>
     </View>
   );
@@ -149,8 +104,6 @@ export function SecaoAssinatura({ checklist, assinatura, podeAgir }: SecaoAssina
 
 const estilos = StyleSheet.create({
   secao: { gap: Spacing.three },
-  campo: { gap: Spacing.one },
-  email: { minHeight: 48, justifyContent: 'center', paddingHorizontal: Spacing.three, borderRadius: 12, borderWidth: 1 },
   estado: { gap: Spacing.two },
   copia: { gap: Spacing.two },
   estadoLinha: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },

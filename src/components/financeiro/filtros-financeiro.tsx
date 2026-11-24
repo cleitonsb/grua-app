@@ -12,7 +12,7 @@ import { useCadastro } from '@/hooks/use-cadastro';
 import type { SituacaoDoFiltro } from '@/hooks/use-financeiro';
 import { useTheme } from '@/hooks/use-theme';
 import type { Caminhao, Cliente, Motorista } from '@/types/api';
-import { formatarPlaca } from '@/utils/formatadores';
+import { formatarPlaca, nomeDoCliente } from '@/utils/formatadores';
 
 const SITUACOES: { valor: SituacaoDoFiltro; rotulo: string }[] = [
   { valor: 'a_receber', rotulo: 'A receber' },
@@ -109,8 +109,8 @@ export function FiltrosFinanceiro({
             onSelecionar={(registro) => {
               const cliente = registro as Cliente;
 
-              setClienteEscolhido(cliente.nome);
-              aoEscolherCliente({ id: cliente.id, nome: cliente.nome });
+              setClienteEscolhido(nomeDoCliente(cliente.nome));
+              aoEscolherCliente({ id: cliente.id, nome: nomeDoCliente(cliente.nome) });
             }}
           />
           {clienteId ? <Botao titulo="Remover filtro de cliente" variante="secundario" onPress={() => aoEscolherCliente(undefined)} /> : null}

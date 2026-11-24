@@ -10,7 +10,7 @@ import { Alturas, Fontes, MaxContentWidth, Raios, Spacing } from '@/constants/th
 import { useCadastro } from '@/hooks/use-cadastro';
 import { useTheme } from '@/hooks/use-theme';
 import type { Cliente, Veiculo } from '@/types/api';
-import { formatarCpfCnpj, formatarPlaca, formatarTelefone } from '@/utils/formatadores';
+import { descricaoDoVeiculo, formatarCpfCnpj, formatarTelefone, juntarPreenchidos, NAO_INFORMADO, nomeDoCliente } from '@/utils/formatadores';
 
 type Tipo = 'cliente' | 'veiculo';
 
@@ -23,6 +23,8 @@ interface SeletorRegistroProps {
   detalhe?: string;
   erro?: string;
   onSelecionar: (registro: Cliente | Veiculo) => void;
+  /** Quando existe, a lista ganha a opção "Não informado", que desfaz a escolha (o cadastro é opcional). */
+  onLimpar?: () => void;
   /** Abre o formulário de cadastro; o registro salvo volta selecionado (ver `selecao-pendente`). Sem ele, a lista só escolhe. */
   onCadastrarNovo?: () => void;
 }
@@ -45,9 +47,11 @@ const TEXTOS: Record<Tipo, { escolher: string; novo: string; busca: string; vazi
 };
 
 /** Campo que mostra o cliente ou veículo escolhido e abre uma lista com busca (só cadastros ativos). */
-export function SeletorRegistro({ tipo, rotulo, resumo, detalhe, erro, onSelecionar, onCadastrarNovo }: SeletorRegistroProps) {
+export function SeletorRegistro({ tipo, rotulo, resumo, detalhe, erro, onSelecionar, onLimpar, onCadastrarNovo }: SeletorRegistroProps) {
   const theme = useTheme();
   const [aberto, setAberto] = useState(false);
+  // Sem nada escolhido, o campo opcional mostra "Não informado" (e não um convite a escolher).
+  const vazio = onLimpar ? NAO_INFORMADO : TEXTOS[tipo].escolher;
 
   return (
     <View style={estilos.campo}>
@@ -55,7 +59,7 @@ export function SeletorRegistro({ tipo, rotulo, resumo, detalhe, erro, onSelecio
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${rotulo}: ${resumo ?? TEXTOS[tipo].escolher}`}
+        accessibilityLabel={`${rotulo}: ${resumo ?? vazio}`}
         onPress={() => setAberto(true)}
         style={[
           estilos.entrada,
@@ -63,7 +67,7 @@ export function SeletorRegistro({ tipo, rotulo, resumo, detalhe, erro, onSelecio
         ]}>
         <View style={estilos.entradaTexto}>
           <ThemedText style={[estilos.valor, { color: resumo ? theme.text : theme.placeholder }]}>
-            {resumo ?? TEXTOS[tipo].escolher}
+            {resumo ?? vazio}
           </ThemedText>
           {detalhe ? (
             <ThemedText type="small" themeColor="textSecondary">
@@ -89,6 +93,14 @@ export function SeletorRegistro({ tipo, rotulo, resumo, detalhe, erro, onSelecio
               setAberto(false);
               onSelecionar(registro);
             }}
+            onLimpar={
+              onLimpar
+                ? () => {
+                    setAberto(false);
+                    onLimpar();
+                  }
+                : undefined
+            }
             onNovo={
               onCadastrarNovo
                 ? () => {
@@ -108,10 +120,11 @@ interface EscolhaDeRegistroProps {
   tipo: Tipo;
   onFechar: () => void;
   onEscolher: (registro: Cliente | Veiculo) => void;
+  onLimpar?: () => void;
   onNovo?: () => void;
 }
 
-function EscolhaDeRegistro({ tipo, onFechar, onEscolher, onNovo }: EscolhaDeRegistroProps) {
+function EscolhaDeRegistro({ tipo, onFechar, onEscolher, onLimpar, onNovo }: EscolhaDeRegistroProps) {
   const textos = TEXTOS[tipo];
   // Montado só com o modal aberto; começa filtrando os ativos, que são os únicos que podem ser escolhidos.
   const cadastro = useCadastro<Cliente | Veiculo>(tipo === 'cliente' ? 'clientes' : 'veiculos', { filtroInicial: 'ativos' });
@@ -120,14 +133,14 @@ function EscolhaDeRegistro({ tipo, onFechar, onEscolher, onNovo }: EscolhaDeRegi
     tipo === 'cliente'
       ? {
           id: registro.id,
-          titulo: (registro as Cliente).nome,
-          subtitulo: `${formatarCpfCnpj((registro as Cliente).documento)} · ${formatarTelefone((registro as Cliente).telefone)}`,
+          titulo: nomeDoCliente((registro as Cliente).nome),
+          subtitulo: juntarPreenchidos([formatarCpfCnpj((registro as Cliente).documento), formatarTelefone((registro as Cliente).telefone)]),
           ativo: registro.ativo,
         }
       : {
           id: registro.id,
-          titulo: `${(registro as Veiculo).modelo} · ${formatarPlaca((registro as Veiculo).placa)}`,
-          subtitulo: (registro as Veiculo).cor,
+          titulo: descricaoDoVeiculo(registro as Veiculo),
+          subtitulo: (registro as Veiculo).cor ?? '',
           ativo: registro.ativo,
         },
   );
@@ -139,6 +152,7 @@ function EscolhaDeRegistro({ tipo, onFechar, onEscolher, onNovo }: EscolhaDeRegi
       <CabecalhoTela titulo={textos.titulo} aoVoltar={onFechar} />
 
       <View style={estilos.conteudo}>
+        {onLimpar ? <Botao titulo={NAO_INFORMADO} variante="secundario" onPress={onLimpar} /> : null}
         {onNovo ? <Botao titulo={textos.novo} variante="secundario" onPress={onNovo} /> : null}
 
         <CadastroLista

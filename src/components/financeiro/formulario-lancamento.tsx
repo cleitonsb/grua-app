@@ -13,7 +13,7 @@ import type { DadosDoLancamento } from '@/hooks/use-lancamento';
 import { useTheme } from '@/hooks/use-theme';
 import type { Caminhao, Cliente, Veiculo } from '@/types/api';
 import { centavosDeDigitos, formatarReais, LIMITE_EM_CENTAVOS, mascaraDeReais } from '@/utils/dinheiro';
-import { formatarPlaca } from '@/utils/formatadores';
+import { descricaoDoVeiculo, formatarPlaca, nomeDoCliente } from '@/utils/formatadores';
 import { dataParaIso, hojeEmBrasilia, isoParaData, mascaraDeData } from '@/utils/periodo';
 
 export interface ValoresIniciais {
@@ -112,7 +112,7 @@ export function FormularioLancamento({ titulo, modo, inicial, salvando, erroAcao
             onSelecionar={(registro) => {
               const escolhido = registro as Cliente;
 
-              setCliente({ id: escolhido.id, nome: escolhido.nome });
+              setCliente({ id: escolhido.id, nome: nomeDoCliente(escolhido.nome) });
               limpar('cliente_id');
             }}
           />
@@ -124,7 +124,7 @@ export function FormularioLancamento({ titulo, modo, inicial, salvando, erroAcao
             onSelecionar={(registro) => {
               const escolhido = registro as Veiculo;
 
-              setVeiculo({ id: escolhido.id, descricao: `${escolhido.modelo} · ${formatarPlaca(escolhido.placa)}` });
+              setVeiculo({ id: escolhido.id, descricao: descricaoDoVeiculo(escolhido) });
             }}
           />
           {veiculo ? <Botao titulo="Remover veículo" variante="secundario" onPress={() => setVeiculo(null)} /> : null}

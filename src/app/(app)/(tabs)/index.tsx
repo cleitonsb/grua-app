@@ -5,7 +5,7 @@ import { AvatarIniciais } from '@/components/avatar-iniciais';
 import { Botao } from '@/components/botao';
 import { CabecalhoTela } from '@/components/cabecalho-tela';
 import { Cartao } from '@/components/cartao';
-import { ChecklistRecenteItem } from '@/components/checklist-recente-item';
+import { OperacaoItem } from '@/components/operacao-item';
 import { ContaAcoes } from '@/components/conta-acoes';
 import { ContadorCard } from '@/components/contador-card';
 import { ThemedText } from '@/components/themed-text';
@@ -77,8 +77,8 @@ export default function InicioScreen() {
             <>
               <View style={estilos.contadores}>
                 <ContadorCard valor={dados.contadores.hoje} rotulo="Hoje" />
-                <ContadorCard valor={dados.contadores.aguardando_assinatura} rotulo="Aguardando assinatura" />
                 <ContadorCard valor={dados.contadores.concluidos} rotulo="Concluídos" />
+                <ContadorCard valor={dados.contadores.assinados} rotulo="Assinados" />
               </View>
 
               {dados.rascunhos.length > 0 ? (
@@ -93,7 +93,7 @@ export default function InicioScreen() {
                       <View style={estilos.rascunhoTexto}>
                         <ThemedText type="smallBold" style={estilos.rascunhoTitulo}>
                           {rascunho.tipo === 'entrega' ? 'Entrega' : 'Retirada'}
-                          {rascunho.veiculo ? ` · ${rascunho.veiculo}${rascunho.placa ? ` · ${formatarPlaca(rascunho.placa)}` : ''}` : ''}
+                          {rascunho.placa ? ` · ${formatarPlaca(rascunho.placa)}` : ''}
                         </ThemedText>
                         <ThemedText type="small" themeColor="textSecondary">
                           Passo {rascunho.passo_atual} de 4 · alterado {formatarQuando(rascunho.atualizado_em)}
@@ -107,7 +107,7 @@ export default function InicioScreen() {
 
               <View style={estilos.bloco}>
                 <View style={estilos.tituloSecao}>
-                  <ThemedText type="subtitle">Checklists recentes</ThemedText>
+                  <ThemedText type="subtitle">Operações recentes</ThemedText>
                   <Pressable accessibilityRole="link" onPress={() => router.push('/checklists')} style={estilos.verTodos}>
                     <ThemedText type="smallBold" style={estilos.sublinhado}>
                       Ver todos
@@ -116,13 +116,13 @@ export default function InicioScreen() {
                 </View>
 
                 {dados.recentes.length === 0 ? (
-                  <ThemedText themeColor="textSecondary">Nenhum checklist ainda.</ThemedText>
+                  <ThemedText themeColor="textSecondary">Nenhuma operação ainda.</ThemedText>
                 ) : (
-                  dados.recentes.map((checklist) => (
-                    <ChecklistRecenteItem
-                      key={checklist.id}
-                      checklist={checklist}
-                      onPress={() => router.push(`/checklists/${checklist.id}` as Href)}
+                  dados.recentes.map((operacao) => (
+                    <OperacaoItem
+                      key={operacao.id}
+                      operacao={operacao}
+                      onPress={() => router.push(`/checklists/${operacao.id}/operacao` as Href)}
                     />
                   ))
                 )}

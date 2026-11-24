@@ -16,8 +16,8 @@ export function validarPasso(passo: number, checklist: Checklist): ErrosDoPasso 
   const erros: ErrosDoPasso = {};
 
   if (passo === 1) {
-    if (!checklist.cliente) erros.cliente_id = 'Escolha o cliente.';
-    if (!checklist.veiculo) erros.veiculo_id = 'Escolha o veículo.';
+    // O cliente é opcional ("Não informado"); a placa do veículo é obrigatória.
+    if (vazio(checklist.placa)) erros.placa = 'Informe a placa do veículo.';
     if (vazio(checklist.local_retirada)) erros.local_retirada = 'Informe o local de retirada.';
     if (vazio(checklist.destino)) erros.destino = 'Informe o destino.';
     if (checklist.cliente_acompanha === null) erros.cliente_acompanha = 'Informe se o cliente acompanha o serviço.';

@@ -17,6 +17,8 @@ import { dataParaIso, hojeEmBrasilia, isoParaData, mascaraDeData } from '@/utils
 interface DialogoDePagamentoProps {
   /** Quando o lançamento ainda está sem valor, o painel pede o valor (define e paga de uma vez). */
   pedirValor: boolean;
+  /** Forma de pagamento combinada na retirada, já marcada ao abrir o painel. */
+  formaCombinada?: FormaPagamento | null;
   executando: boolean;
   /** Mensagem geral da API e erros por campo (`pago_em`, `forma_pagamento`, `valor_centavos`). */
   erroAcao?: string;
@@ -31,10 +33,10 @@ const OPCOES = (Object.keys(ROTULO_DA_FORMA) as FormaPagamento[]).map((forma) =>
  * Painel "Marcar como pago": data (padrão hoje em Brasília, não pode ser futura), forma de pagamento e, se faltar, o
  * valor. Valida antes de enviar; a API repete as regras e devolve o erro no campo certo.
  */
-export function DialogoDePagamento({ pedirValor, executando, erroAcao, errosDoCampo, aoConfirmar, aoVoltar }: DialogoDePagamentoProps) {
+export function DialogoDePagamento({ pedirValor, formaCombinada = null, executando, erroAcao, errosDoCampo, aoConfirmar, aoVoltar }: DialogoDePagamentoProps) {
   const theme = useTheme();
   const [data, setData] = useState(() => isoParaData(hojeEmBrasilia()));
-  const [forma, setForma] = useState<FormaPagamento | null>(null);
+  const [forma, setForma] = useState<FormaPagamento | null>(formaCombinada);
   const [valor, setValor] = useState('');
   const [erros, setErros] = useState<Record<string, string>>({});
 

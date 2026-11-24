@@ -9,14 +9,13 @@ import { formatarPlaca, formatarQuando } from '@/utils/formatadores';
 
 export const ROTULOS_DE_STATUS: Record<StatusChecklist, string> = {
   rascunho: 'Rascunho',
-  aguardando_assinatura: 'Aguardando assinatura',
+  concluido: 'Concluído',
   assinado: 'Assinado',
 };
 
-/** O que a linha mostra: serve ao Início (`ChecklistRecente`) e à lista (`ChecklistResumo`). */
+/** O que a linha mostra: serve à lista de checklists (`ChecklistResumo`). */
 export interface DadosDaLinha {
   id: number;
-  veiculo: string | null;
   placa: string | null;
   cliente: string | null;
   data_hora: string;
@@ -26,11 +25,9 @@ export interface DadosDaLinha {
   motorista?: string;
 }
 
-/** Linha de checklist: veículo e placa, cliente e horário, e o selo de status. Tocar abre o detalhe. */
+/** Linha de checklist: placa, cliente e horário, e o selo de status. Tocar abre o detalhe. */
 export function ChecklistRecenteItem({ checklist, onPress }: { checklist: DadosDaLinha; onPress?: () => void }) {
-  const veiculo = checklist.veiculo
-    ? `${checklist.veiculo}${checklist.placa ? ` · ${formatarPlaca(checklist.placa)}` : ''}`
-    : 'Veículo não informado';
+  const veiculo = checklist.placa ? formatarPlaca(checklist.placa) : 'Placa não informada';
   const detalhes = [
     checklist.tipo === 'entrega' ? 'Entrega' : checklist.tipo === 'retirada' ? 'Retirada' : undefined,
     checklist.cliente ?? 'Cliente não informado',

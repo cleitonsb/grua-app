@@ -21,19 +21,21 @@ export interface Caminhao {
 
 export interface Cliente {
   id: number;
-  nome: string;
-  documento: string;
-  telefone: string;
-  email_assinatura: string;
+  /** Todos os campos do cliente são opcionais ("Não informado"). */
+  nome: string | null;
+  documento: string | null;
+  telefone: string | null;
+  email_assinatura: string | null;
   rg: string | null;
   ativo: boolean;
 }
 
 export interface Veiculo {
   id: number;
+  /** Só a placa é obrigatória. */
   placa: string;
-  modelo: string;
-  cor: string;
+  modelo: string | null;
+  cor: string | null;
   ativo: boolean;
 }
 
@@ -71,7 +73,8 @@ export interface RespostaLogin {
   user: Usuario;
 }
 
-export type StatusChecklist = 'rascunho' | 'aguardando_assinatura' | 'assinado';
+/** `concluido`: enviado e imutável. `assinado`: concluído e o cliente assinou na tela do motorista (opcional). */
+export type StatusChecklist = 'rascunho' | 'concluido' | 'assinado';
 export type TipoChecklist = 'retirada' | 'entrega';
 export type TipoAvaria = 'batido' | 'riscado' | 'danificado' | 'falta';
 export type EstadoPneu = 'bom' | 'medio' | 'ruim';
@@ -131,17 +134,10 @@ export interface ItemChecklist {
 /** Cliente do checklist: o cadastro enquanto é rascunho, o snapshot depois do envio. */
 export interface ClienteChecklist {
   id?: number;
-  nome: string;
-  documento: string;
-  telefone: string;
-  email_assinatura: string;
-}
-
-export interface VeiculoChecklist {
-  id?: number;
-  placa: string;
-  modelo: string;
-  cor: string;
+  nome: string | null;
+  documento: string | null;
+  telefone: string | null;
+  email_assinatura: string | null;
 }
 
 export interface CorrecaoChecklist {
@@ -162,7 +158,13 @@ export interface Checklist {
   motorista: { id: number; nome: string };
   caminhao: Caminhao | null;
   cliente: ClienteChecklist | null;
-  veiculo: VeiculoChecklist | null;
+  /** Placa digitada (obrigatória); o checklist não usa mais veículo cadastrado. */
+  placa: string | null;
+  /** Combinados na retirada (a entrega é a mesma operação e não os tem). */
+  valor_centavos: number | null;
+  forma_pagamento: FormaPagamento | null;
+  /** Na retirada: o único lançamento da operação; nulo antes de concluir. */
+  lancamento?: { id: number; situacao: SituacaoLancamento; valor_centavos: number | null; forma_pagamento: FormaPagamento | null; pago_em: string | null } | null;
   local_retirada: string | null;
   destino: string | null;
   cliente_acompanha: boolean | null;
@@ -174,6 +176,8 @@ export interface Checklist {
   itens: ItemChecklist[];
   contagens: { itens_presentes: number; fotos: number; avarias: number; itens_sem_foto: number };
   origem: { id: number; data_hora: string } | null;
+  /** Na retirada: a entrega dela (cada retirada tem uma); nulo enquanto não foi iniciada. */
+  entrega?: { id: number; status: StatusChecklist } | null;
   enviado_em: string | null;
   /** Data e hora da assinatura do cliente; nulo enquanto não assinado. */
   assinada_em: string | null;
@@ -187,7 +191,6 @@ export interface ChecklistResumo {
   tipo: TipoChecklist;
   status: StatusChecklist;
   cliente: string | null;
-  veiculo: string | null;
   placa: string | null;
   motorista: string;
   data_hora: string;
@@ -197,7 +200,9 @@ export interface ChecklistResumo {
 /** Campos do autosave (`PATCH /checklists/{id}`); só os enviados mudam. */
 export interface ChecklistAtualizacao {
   cliente_id?: number | null;
-  veiculo_id?: number | null;
+  placa?: string | null;
+  valor_centavos?: number | null;
+  forma_pagamento?: FormaPagamento | null;
   local_retirada?: string | null;
   destino?: string | null;
   cliente_acompanha?: boolean | null;
@@ -254,19 +259,20 @@ export interface RascunhoResumo {
   id: number;
   tipo: TipoChecklist;
   passo_atual: number;
-  veiculo: string | null;
   placa: string | null;
   atualizado_em: string;
 }
 
-/** Item da lista "Checklists recentes" do Início: os 10 enviados mais recentes. */
-export interface ChecklistRecente {
+/** Situação de uma operação (retirada e entrega, com um financeiro só): pago vale mais que assinado, que vale mais que concluído. */
+export type SituacaoDaOperacao = 'concluido' | 'assinado' | 'pago';
+
+/** Item da lista "Operações recentes" do Início: `id` é o da retirada. */
+export interface OperacaoRecente {
   id: number;
-  veiculo: string;
-  placa: string;
-  cliente: string;
+  placa: string | null;
+  cliente: string | null;
   data_hora: string;
-  status: StatusChecklist;
+  situacao: SituacaoDaOperacao;
 }
 
 export interface InicioResposta {
@@ -275,10 +281,11 @@ export interface InicioResposta {
   caminhao: Caminhao | null;
   contadores: {
     hoje: number;
-    aguardando_assinatura: number;
+    /** Enviados (com ou sem assinatura). */
     concluidos: number;
+    assinados: number;
   };
-  recentes: ChecklistRecente[];
+  recentes: OperacaoRecente[];
   /** Rascunhos do motorista (o administrador não tem), do alterado mais recentemente ao mais antigo. */
   rascunhos: RascunhoResumo[];
   pode_criar_checklist: boolean;
@@ -292,22 +299,16 @@ export interface ErroApiCorpo {
   faltantes?: Faltante[];
 }
 
-/** Situação do link de assinatura (spec 003). `assinado` vale depois que o cliente assinou. */
-export type SituacaoDoLink = 'sem_envio' | 'enviado' | 'falhou' | 'expirado' | 'assinado';
-
 /** Situação do e-mail com a cópia em PDF. */
 export type SituacaoDaCopia = 'pendente' | 'enviado' | 'falhou';
 
-/** `GET /checklists/{id}/assinatura`: estado do link, da assinatura e da cópia por e-mail. */
+/** `GET /checklists/{id}/assinatura`: estado da assinatura (opcional, colhida na tela do motorista) e da cópia por e-mail. */
 export interface EstadoDaAssinatura {
-  situacao: SituacaoDoLink;
-  link: {
-    enviado_em: string | null;
-    expira_em: string | null;
-    /** E-mail do cliente mascarado pela API (ex.: `j***@exemplo.com.br`). */
-    destinatario: string;
-    reenvios_restantes: number;
-  } | null;
+  situacao: 'sem_assinatura' | 'assinado';
+  /** Verdadeiro quando o checklist está concluído e ainda sem assinatura. */
+  pode_assinar: boolean;
+  /** Texto que o cliente aceita ao assinar, conforme o tipo do checklist. */
+  declaracao: string;
   assinada_em: string | null;
   pdf_disponivel: boolean;
   copia: {

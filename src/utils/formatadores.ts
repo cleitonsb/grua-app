@@ -19,8 +19,8 @@ function aplicarMascara(digitos: string, grupos: number[], separadores: string[]
 }
 
 /** CPF (000.000.000-00) até 11 dígitos; acima disso, CNPJ (00.000.000/0000-00). */
-export function formatarCpfCnpj(valor: string): string {
-  const digitos = apenasDigitos(valor).slice(0, 14);
+export function formatarCpfCnpj(valor: string | null | undefined): string {
+  const digitos = apenasDigitos(valor ?? '').slice(0, 14);
 
   return digitos.length <= 11
     ? aplicarMascara(digitos, [3, 3, 3, 2], ['.', '.', '-'])
@@ -28,8 +28,8 @@ export function formatarCpfCnpj(valor: string): string {
 }
 
 /** Telefone com DDD: (61) 3333-4444 ou (61) 99999-8888. */
-export function formatarTelefone(valor: string): string {
-  const digitos = apenasDigitos(valor).slice(0, 11);
+export function formatarTelefone(valor: string | null | undefined): string {
+  const digitos = apenasDigitos(valor ?? '').slice(0, 11);
 
   if (digitos.length === 0) {
     return '';
@@ -51,6 +51,13 @@ export function formatarTelefone(valor: string): string {
 /** Placa em maiúsculas e sem hífen, até 7 caracteres (é como a API guarda). */
 export function normalizarPlaca(valor: string): string {
   return valor.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 7);
+}
+
+/** Placa completa e válida: formato antigo (ABC1234) ou Mercosul (ABC1D23), com ou sem hífen. */
+export function placaValida(valor: string): boolean {
+  const placa = normalizarPlaca(valor);
+
+  return /^[A-Z]{3}\d{4}$/.test(placa) || /^[A-Z]{3}\d[A-Z]\d{2}$/.test(placa);
 }
 
 /** Placa para exibição: formato antigo com hífen (ABC-1234); Mercosul sem (ABC1D23). */
@@ -114,4 +121,22 @@ export function formatarDiaEHora(dataHoraIso: string): string {
   } catch {
     return data.toLocaleString('pt-BR');
   }
+}
+
+/** Texto de quem não foi informado (cliente e veículo são opcionais no checklist). */
+export const NAO_INFORMADO = 'Não informado';
+
+/** Nome do cliente para listas; o cadastro pode existir sem nome. */
+export function nomeDoCliente(nome: string | null | undefined): string {
+  return nome?.trim() || 'Cliente sem nome';
+}
+
+/** Junta só o que foi preenchido, separado por " · " (ex.: documento e telefone; modelo, placa e cor). */
+export function juntarPreenchidos(partes: (string | null | undefined)[]): string {
+  return partes.filter((parte): parte is string => Boolean(parte?.trim())).join(' · ');
+}
+
+/** "Modelo · ABC-1234" com o que existir; a placa é sempre conhecida, modelo e cor podem faltar. */
+export function descricaoDoVeiculo(veiculo: { placa: string; modelo?: string | null; cor?: string | null }, comCor = false): string {
+  return juntarPreenchidos([veiculo.modelo, formatarPlaca(veiculo.placa), comCor ? veiculo.cor : null]);
 }

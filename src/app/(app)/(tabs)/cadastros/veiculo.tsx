@@ -45,8 +45,8 @@ export default function VeiculoScreen() {
         }
 
         setPlaca(veiculo.placa);
-        setModelo(veiculo.modelo);
-        setCor(veiculo.cor);
+        setModelo(veiculo.modelo ?? '');
+        setCor(veiculo.cor ?? '');
         setAtivo(veiculo.ativo);
       })
       .catch((erro) => ativoNaTela && setErroGeral(erro instanceof ApiError ? erro.message : 'Não foi possível carregar o veículo.'))
@@ -60,8 +60,6 @@ export default function VeiculoScreen() {
   async function salvar() {
     const novosErros: Erros = {
       placa: placa ? undefined : 'Informe a placa.',
-      modelo: modelo.trim() ? undefined : 'Informe o modelo.',
-      cor: cor.trim() ? undefined : 'Informe a cor.',
     };
 
     setErros(novosErros);

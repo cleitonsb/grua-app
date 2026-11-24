@@ -46,10 +46,10 @@ export default function ClienteScreen() {
           return;
         }
 
-        setNome(cliente.nome);
+        setNome(cliente.nome ?? '');
         setDocumento(formatarCpfCnpj(cliente.documento));
         setTelefone(formatarTelefone(cliente.telefone));
-        setEmail(cliente.email_assinatura);
+        setEmail(cliente.email_assinatura ?? '');
         setRg(cliente.rg ?? '');
         setAtivo(cliente.ativo);
       })
@@ -62,20 +62,9 @@ export default function ClienteScreen() {
   }, [edicao, id]);
 
   async function salvar() {
-    const novosErros: Erros = {
-      nome: nome.trim() ? undefined : 'Informe o nome completo.',
-      documento: documento.trim() ? undefined : 'Informe o CPF ou CNPJ.',
-      telefone: telefone.trim() ? undefined : 'Informe o telefone.',
-      email_assinatura: email.trim() ? undefined : 'Informe o e-mail para assinatura.',
-    };
-
-    setErros(novosErros);
+    // Nenhum campo do cliente é obrigatório; a API valida o formato do que foi preenchido.
+    setErros({});
     setErroGeral(undefined);
-
-    if (Object.values(novosErros).some(Boolean)) {
-      return;
-    }
-
     setSalvando(true);
 
     try {
@@ -153,12 +142,12 @@ export default function ClienteScreen() {
       />
 
       <CampoFormulario
-        rotulo="E-mail para assinatura"
+        rotulo="E-mail"
         placeholder="cliente@email.com"
         value={email}
         onChangeText={setEmail}
         erro={erros.email_assinatura}
-        ajuda="O link para o cliente assinar o checklist é enviado para este endereço."
+        ajuda="Opcional. Se informado, a cópia do checklist assinado em PDF é enviada para este endereço."
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}

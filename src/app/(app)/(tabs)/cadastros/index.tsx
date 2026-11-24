@@ -10,7 +10,7 @@ import { useCadastro, useRecarregarAoFocar } from '@/hooks/use-cadastro';
 import { useSession } from '@/hooks/use-session';
 import { useTheme } from '@/hooks/use-theme';
 import type { Administrador, Caminhao, Cliente, Motorista, Veiculo } from '@/types/api';
-import { formatarCpfCnpj, formatarPlaca, formatarTelefone } from '@/utils/formatadores';
+import { descricaoDoVeiculo, formatarCpfCnpj, formatarPlaca, formatarTelefone, juntarPreenchidos, NAO_INFORMADO, nomeDoCliente } from '@/utils/formatadores';
 
 type Aba = 'motoristas' | 'caminhoes' | 'clientes' | 'veiculos' | 'administradores';
 
@@ -62,8 +62,8 @@ const CONFIG: Record<Aba, ConfigAba> = {
     mensagemVazia: 'Nenhum cliente encontrado.',
     paraItem: (registro: Cliente) => ({
       id: registro.id,
-      titulo: registro.nome,
-      subtitulo: `${formatarCpfCnpj(registro.documento)} · ${formatarTelefone(registro.telefone)}`,
+      titulo: nomeDoCliente(registro.nome),
+      subtitulo: juntarPreenchidos([formatarCpfCnpj(registro.documento), formatarTelefone(registro.telefone)]) || NAO_INFORMADO,
       ativo: registro.ativo,
     }),
   },
@@ -76,8 +76,8 @@ const CONFIG: Record<Aba, ConfigAba> = {
     mensagemVazia: 'Nenhum veículo encontrado.',
     paraItem: (registro: Veiculo) => ({
       id: registro.id,
-      titulo: `${registro.modelo} · ${formatarPlaca(registro.placa)}`,
-      subtitulo: registro.cor,
+      titulo: descricaoDoVeiculo(registro),
+      subtitulo: registro.cor ?? '',
       ativo: registro.ativo,
     }),
   },

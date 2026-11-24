@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CabecalhoTela } from '@/components/cabecalho-tela';
 import { RodapeFixo, type RodapeFixoProps } from '@/components/rodape-fixo';
+import { RolagemComTeclado } from '@/components/rolagem-com-teclado';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -31,11 +32,11 @@ export function FormularioTela({ titulo, children, aoVoltar, rodape }: Formulari
       />
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={estilos.tela}>
-        <ScrollView
+        <RolagemComTeclado
           contentContainerStyle={[estilos.conteudo, { paddingBottom: rodape ? Spacing.four : Spacing.four + insets.bottom }]}
           keyboardShouldPersistTaps="handled">
           <View style={estilos.coluna}>{children}</View>
-        </ScrollView>
+        </RolagemComTeclado>
 
         {rodape ? <RodapeFixo {...rodape} /> : null}
       </KeyboardAvoidingView>

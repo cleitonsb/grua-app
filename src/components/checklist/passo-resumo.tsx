@@ -17,9 +17,9 @@ interface PassoResumoProps {
   faltantes: Faltante[];
   avisos: string[];
   erroEnvio?: string;
-  /** Estado e ações do link de assinatura (hook `useAssinatura` da tela). */
+  /** Estado e ações da assinatura (hook `useAssinatura` da tela). */
   assinatura: UsoDaAssinatura;
-  /** Motorista dono: pode enviar e reenviar o link. */
+  /** Motorista dono: pode colher a assinatura e reenviar a cópia. */
   podeAgir: boolean;
   onIrParaPasso: (passo: number) => void;
 }
@@ -39,11 +39,11 @@ export function PassoResumo({ checklist, faltantes, avisos, erroEnvio, assinatur
       {enviado ? (
         <Cartao style={estilos.status}>
           <View accessibilityLiveRegion="polite" style={estilos.status}>
-            <Selo tipo={checklist.status === 'assinado' ? 'assinado' : 'aguardando_assinatura'} />
+            <Selo tipo={checklist.status === 'assinado' ? 'assinado' : 'concluido'} />
             <ThemedText type="small" themeColor="textSecondary">
               {checklist.status === 'assinado'
                 ? 'O cliente já assinou este checklist.'
-                : 'Checklist enviado. Ele não pode mais ser alterado e aguarda a assinatura do cliente.'}
+                : 'Checklist concluído. Ele não pode mais ser alterado; a assinatura do cliente é opcional.'}
             </ThemedText>
           </View>
         </Cartao>

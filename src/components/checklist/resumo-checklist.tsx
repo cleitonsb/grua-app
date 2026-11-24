@@ -11,7 +11,9 @@ import { rotuloDe, useCatalogo } from '@/hooks/use-catalogo';
 import { useTheme } from '@/hooks/use-theme';
 import type { Catalogo, Checklist, CorrecaoChecklist, FotoChecklist } from '@/types/api';
 import { COR_DA_LETRA_DO_TIPO, COR_DO_TIPO, LETRA_DO_TIPO } from '@/utils/desenho';
-import { formatarCpfCnpj, formatarPlaca, formatarQuando } from '@/utils/formatadores';
+import { formatarValorOuIndefinido } from '@/utils/dinheiro';
+import { ROTULO_DA_FORMA } from '@/utils/financeiro';
+import { formatarCpfCnpj, formatarPlaca, formatarQuando, NAO_INFORMADO, nomeDoCliente } from '@/utils/formatadores';
 
 const CAMPOS_CORRIGIDOS: Record<string, string> = {
   local_retirada: 'Local de retirada',
@@ -67,18 +69,17 @@ export function ResumoChecklist({ checklist }: { checklist: Checklist }) {
       <Cartao style={estilos.resumoDoServico}>
         <LinhaDoResumo
           rotulo="Cliente"
-          valor={checklist.cliente?.nome}
-          detalhe={checklist.cliente ? formatarCpfCnpj(checklist.cliente.documento) : undefined}
+          valor={checklist.cliente ? nomeDoCliente(checklist.cliente.nome) : NAO_INFORMADO}
+          detalhe={checklist.cliente ? formatarCpfCnpj(checklist.cliente.documento) || undefined : undefined}
         />
-        <LinhaDoResumo
-          rotulo="Veículo"
-          valor={
-            checklist.veiculo
-              ? `${checklist.veiculo.modelo} · ${formatarPlaca(checklist.veiculo.placa)}${checklist.veiculo.cor ? ` · ${checklist.veiculo.cor}` : ''}`
-              : undefined
-          }
-        />
+        <LinhaDoResumo rotulo="Placa" valor={checklist.placa ? formatarPlaca(checklist.placa) : NAO_INFORMADO} />
         <LinhaDoResumo rotulo="Rota" valor={rota} />
+        {checklist.tipo === 'retirada' ? (
+          <>
+            <LinhaDoResumo rotulo="Valor" valor={formatarValorOuIndefinido(checklist.valor_centavos)} />
+            <LinhaDoResumo rotulo="Forma de pagamento" valor={checklist.forma_pagamento ? ROTULO_DA_FORMA[checklist.forma_pagamento] : 'A definir'} />
+          </>
+        ) : null}
         <LinhaDoResumo
           rotulo="Cliente acompanha"
           valor={checklist.cliente_acompanha === null ? undefined : checklist.cliente_acompanha ? 'Sim' : 'Não'}

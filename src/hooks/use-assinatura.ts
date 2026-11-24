@@ -3,13 +3,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useRecarregarAoFocar } from '@/hooks/use-cadastro';
 import { api, ApiError } from '@/services/api';
+import type { Tracos } from '@/components/quadro-de-assinatura';
 import type { EstadoDaAssinatura, UrlDoPdf } from '@/types/api';
 
 const mensagemDeErro = (excecao: unknown, padrao: string) => (excecao instanceof ApiError ? excecao.message : padrao);
 
 /**
- * Estado do link de assinatura de um checklist (`GET /checklists/{id}/assinatura`) e as ações do motorista.
- * Só consulta a API quando `ativo` (checklist já enviado). Recarrega ao voltar à tela; não há notificação em segundo
+ * Estado da assinatura de um checklist (`GET /checklists/{id}/assinatura`) e as ações do motorista. A assinatura é
+ * opcional e colhida na tela do motorista. Só consulta a API quando `ativo` (checklist já concluído). Recarrega ao voltar à tela; não há notificação em segundo
  * plano. Uma resposta que chega depois de uma ação mais nova é descartada, para não desfazer o resultado da ação.
  */
 export function useAssinatura(checklistId: number | string, ativo: boolean) {
@@ -71,28 +72,33 @@ export function useAssinatura(checklistId: number | string, ativo: boolean) {
     }
   });
 
-  /** Envia (ou reenvia) o link ao e-mail atual do cliente. Devolve se o e-mail foi enviado. */
-  const enviarLink = useCallback(async (): Promise<boolean> => {
-    setEnviando(true);
-    setErroAcao(undefined);
-    ordem.current++;
-
-    try {
-      const novo = await api<EstadoDaAssinatura>(`/checklists/${checklistId}/assinatura/link`, { method: 'POST' });
-
+  /** Grava a assinatura que o cliente desenhou na tela. Devolve se foi gravada. */
+  const assinar = useCallback(
+    async (tracos: Tracos, proporcao: number): Promise<boolean> => {
+      setEnviando(true);
+      setErroAcao(undefined);
       ordem.current++;
-      setEstado(novo);
 
-      return true;
-    } catch (excecao) {
-      setErroAcao(mensagemDeErro(excecao, 'Não foi possível enviar o link. Tente novamente.'));
-      await recarregar();
+      try {
+        const novo = await api<EstadoDaAssinatura>(`/checklists/${checklistId}/assinatura`, {
+          method: 'POST',
+          body: { tracos, proporcao, aceite: true },
+        });
 
-      return false;
-    } finally {
-      setEnviando(false);
-    }
-  }, [checklistId, recarregar]);
+        ordem.current++;
+        setEstado(novo);
+
+        return true;
+      } catch (excecao) {
+        setErroAcao(mensagemDeErro(excecao, 'Não foi possível gravar a assinatura. Tente novamente.'));
+
+        return false;
+      } finally {
+        setEnviando(false);
+      }
+    },
+    [checklistId],
+  );
 
   /** Reenvia a cópia em PDF por e-mail (assíncrono: o estado volta com a cópia pendente). */
   const reenviarCopia = useCallback(async (): Promise<boolean> => {
@@ -144,7 +150,7 @@ export function useAssinatura(checklistId: number | string, ativo: boolean) {
     erroAcao,
     abrindoPdf,
     reenviandoCopia,
-    enviarLink,
+    assinar,
     reenviarCopia,
     baixarPdf,
     recarregar,

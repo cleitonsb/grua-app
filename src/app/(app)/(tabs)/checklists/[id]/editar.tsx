@@ -6,7 +6,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
   type ScrollViewInstance,
@@ -21,6 +20,7 @@ import { PassoItens } from '@/components/checklist/passo-itens';
 import { PassoResumo } from '@/components/checklist/passo-resumo';
 import { SalvamentoStatus } from '@/components/checklist/salvamento-status';
 import { RodapeFixo } from '@/components/rodape-fixo';
+import { RolagemComTeclado } from '@/components/rolagem-com-teclado';
 import { ThemedText } from '@/components/themed-text';
 import { Alturas, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useChecklist, type CamposDoChecklist } from '@/hooks/use-checklist';
@@ -103,7 +103,8 @@ export default function EditarChecklistScreen() {
     irParaPasso(passo + 1);
   }
 
-  async function enviarParaAssinatura() {
+  /** Conclui o checklist (imutável) e abre a tela em que o cliente assina, se quiser (a assinatura é opcional). */
+  async function concluir() {
     setEnviando(true);
     setErroEnvio(undefined);
     setFaltantes([]);
@@ -113,10 +114,7 @@ export default function EditarChecklistScreen() {
 
       setAvisos(resposta.avisos);
       setEnviadoAgora(true);
-
-      // Segunda chamada, independente: se o e-mail falhar, o checklist segue "Aguardando assinatura" e a seção
-      // mostra "Não foi possível enviar" com "Tentar de novo".
-      await assinatura.enviarLink();
+      router.replace(`/checklists/${id}/assinar`);
     } catch (excecao) {
       if (excecao instanceof ApiError && excecao.status === 422 && excecao.corpo?.faltantes) {
         setFaltantes(excecao.corpo.faltantes);
@@ -176,7 +174,7 @@ export default function EditarChecklistScreen() {
       />
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={estilos.tela}>
-        <ScrollView ref={rolagem} contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled">
+        <RolagemComTeclado ref={rolagem} contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled">
           <View style={estilos.cartao}>
             {carregando ? <ActivityIndicator /> : null}
 
@@ -252,9 +250,9 @@ export default function EditarChecklistScreen() {
               <PassoResumo checklist={checklist} faltantes={[]} avisos={avisos} assinatura={assinatura} podeAgir={podeAgir} onIrParaPasso={() => undefined} />
             ) : null}
           </View>
-        </ScrollView>
+        </RolagemComTeclado>
 
-        {/* Rodapé fixo: Voltar e Continuar nos passos 1 a 3; Voltar e enviar no passo 4; Concluir depois do envio. */}
+        {/* Rodapé fixo: Voltar e Continuar nos passos 1 a 3; Voltar e concluir no passo 4; Fechar depois. */}
         {checklist && editavel && passo < TOTAL_DE_PASSOS ? (
           <RodapeFixo
             secundario={passo > 1 ? { titulo: 'Voltar', aoTocar: () => irParaPasso(passo - 1) } : undefined}
@@ -264,7 +262,7 @@ export default function EditarChecklistScreen() {
         {checklist && editavel && passo === TOTAL_DE_PASSOS ? (
           <RodapeFixo
             secundario={{ titulo: 'Voltar', aoTocar: () => irParaPasso(passo - 1), desabilitado: enviando }}
-            principal={{ titulo: 'Enviar para assinatura', aoTocar: enviarParaAssinatura, carregando: enviando, icone: 'email' }}
+            principal={{ titulo: checklist.tipo === 'entrega' ? 'Concluir entrega' : 'Concluir retirada', aoTocar: concluir, carregando: enviando }}
           />
         ) : null}
         {checklist && !editavel ? (

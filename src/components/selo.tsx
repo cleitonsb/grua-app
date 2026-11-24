@@ -4,11 +4,11 @@ import { ThemedText } from '@/components/themed-text';
 import { Fontes, Raios } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-export type TipoDeSelo = 'rascunho' | 'aguardando_assinatura' | 'assinado' | 'ativo' | 'inativo' | 'a_receber' | 'pago' | 'cancelado';
+export type TipoDeSelo = 'rascunho' | 'concluido' | 'assinado' | 'ativo' | 'inativo' | 'a_receber' | 'pago' | 'cancelado';
 
 const ROTULOS: Record<TipoDeSelo, string> = {
   rascunho: 'Rascunho',
-  aguardando_assinatura: 'Aguardando assinatura',
+  concluido: 'Concluído',
   assinado: 'Assinado',
   ativo: 'Ativo',
   inativo: 'Inativo',
@@ -24,7 +24,7 @@ export function Selo({ tipo, rotulo }: { tipo: TipoDeSelo; rotulo?: string }) {
   const cores =
     tipo === 'assinado' || tipo === 'ativo' || tipo === 'pago'
       ? { fundo: theme.sucessoFundo, texto: theme.sucesso }
-      : tipo === 'aguardando_assinatura' || tipo === 'a_receber'
+      : tipo === 'concluido' || tipo === 'a_receber'
         ? { fundo: theme.alertaFundo, texto: theme.alerta }
         : { fundo: theme.neutroFundo, texto: theme.textSecondary };
 

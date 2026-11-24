@@ -1,5 +1,5 @@
 /**
- * Identidade visual do GuinchoCheck, conforme o protótipo aprovado (spec 005). Há uma única aparência, clara: o
+ * Identidade visual do GruaCheck, conforme o protótipo aprovado (spec 005). Há uma única aparência, clara: o
  * protótipo não tem tema escuro. Os valores e o contraste de cada par estão em
  * specs/005-identidade-visual-prototipo/data-model.md e são verificados por verificacao/contraste.mjs.
  */

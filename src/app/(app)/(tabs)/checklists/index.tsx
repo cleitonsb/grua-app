@@ -16,7 +16,7 @@ import { PERIODOS } from '@/utils/checklist';
 
 const STATUS: { valor: StatusChecklist | 'todos'; rotulo: string }[] = [
   { valor: 'todos', rotulo: 'Todos' },
-  ...(['rascunho', 'aguardando_assinatura', 'assinado'] as const).map((valor) => ({ valor, rotulo: ROTULOS_DE_STATUS[valor] })),
+  ...(['rascunho', 'concluido', 'assinado'] as const).map((valor) => ({ valor, rotulo: ROTULOS_DE_STATUS[valor] })),
 ];
 
 const TIPOS: { valor: TipoChecklist | 'todos'; rotulo: string }[] = [

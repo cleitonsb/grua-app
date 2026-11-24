@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
+import { useAoFocarCampo } from '@/components/rolagem-com-teclado';
 import { ThemedText } from '@/components/themed-text';
 import { Alturas, Fontes, Raios, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -24,6 +25,7 @@ export function CampoFormulario({
   ...resto
 }: CampoFormularioProps) {
   const theme = useTheme();
+  const aoFocarCampo = useAoFocarCampo();
   const [oculto, setOculto] = useState(true);
   const [focado, setFocado] = useState(false);
   const esconder = Boolean(secureTextEntry) && (!alternarVisibilidade || oculto);
@@ -47,6 +49,7 @@ export function CampoFormulario({
           style={[estilos.texto, { color: theme.text }]}
           onFocus={(evento) => {
             setFocado(true);
+            aoFocarCampo?.();
             onFocus?.(evento);
           }}
           onBlur={(evento) => {

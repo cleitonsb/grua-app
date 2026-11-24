@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "grua-app",
+    "name": "GruaCheck",
     "slug": "grua-app",
-    "version": "1.0.0",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "gruaapp",
@@ -14,7 +14,9 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "br.tec.casolucoes.guinchocheck",
+      "versionCode": 6
     },
     "web": {
       "output": "server",
@@ -34,8 +36,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "O GuinchoCheck usa a câmera para fotografar avarias e itens do veículo.",
-          "photosPermission": "O GuinchoCheck acessa suas fotos para anexá-las ao checklist.",
+          "cameraPermission": "O GruaCheck usa a câmera para fotografar avarias e itens do veículo.",
+          "photosPermission": "O GruaCheck acessa suas fotos para anexá-las ao checklist.",
           "microphonePermission": false
         }
       ]
@@ -45,7 +47,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "apiUrl": "http://localhost:8000"
+      "apiUrl": "https://casolucoes.tec.br"
     }
   }
 }

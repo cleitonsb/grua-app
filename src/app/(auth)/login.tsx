@@ -1,11 +1,12 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Botao } from '@/components/botao';
 import { CampoFormulario } from '@/components/campo-formulario';
 import { Icone } from '@/components/icone';
+import { RolagemComTeclado } from '@/components/rolagem-com-teclado';
 import { ThemedText } from '@/components/themed-text';
 import { Fontes, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -56,17 +57,17 @@ export default function LoginScreen() {
   return (
     <View style={[estilos.tela, { backgroundColor: theme.marinho }]}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={estilos.tela}>
-        <ScrollView contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled" bounces={false}>
+        <RolagemComTeclado contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled" bounces={false}>
           <View style={[estilos.topo, { paddingTop: insets.top + Spacing.six }]}>
             <View style={estilos.topoInterno}>
               <View style={[estilos.icone, { backgroundColor: theme.primary }]}>
                 <Icone nome="guincho" tamanho={40} cor={theme.marinho} />
               </View>
               <ThemedText accessibilityRole="header" style={[estilos.nome, { color: theme.branco }]}>
-                GuinchoCheck
+                GruaCheck
               </ThemedText>
               <ThemedText style={[estilos.apresentacao, { color: theme.textoSobreMarinho }]}>
-                Checklist de retirada e entrega de veículos, com fotos e assinatura do cliente.
+                Checklist de retirada e entrega de veículos, com fotos e assinatura do cliente (opcional).
               </ThemedText>
             </View>
           </View>
@@ -115,7 +116,7 @@ export default function LoginScreen() {
               </ThemedText>
             </View>
           </View>
-        </ScrollView>
+        </RolagemComTeclado>
       </KeyboardAvoidingView>
     </View>
   );

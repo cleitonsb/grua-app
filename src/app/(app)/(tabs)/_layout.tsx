@@ -10,7 +10,7 @@ import { useTheme } from '@/hooks/use-theme';
  * Telas em que a barra de abas some, como no protótipo: formulários, fluxo do checklist e tela de foto.
  * Aparece nas telas raiz das abas e na lista e no detalhe de checklists.
  */
-const TELAS_SEM_BARRA = new Set(['editar', 'foto', 'novo', 'cliente', 'veiculo', 'motorista', 'caminhao', 'administrador']);
+const TELAS_SEM_BARRA = new Set(['editar', 'assinar', 'foto', 'novo', 'cliente', 'veiculo', 'motorista', 'caminhao', 'administrador']);
 
 const ABAS: { nome: string; rotulo: string; icone: NomeDoIcone }[] = [
   { nome: 'index', rotulo: 'Início', icone: 'inicio' },

@@ -63,7 +63,9 @@ function aplicarLocal(checklist: Checklist, campos: CamposDoChecklist): Checklis
   if ('pneu_traseiro' in campos) proximo.pneus.traseiro = campos.pneu_traseiro ?? null;
   if ('pneu_estepe' in campos) proximo.pneus.estepe = campos.pneu_estepe ?? null;
   if ('cliente_id' in campos && campos.cliente_id === null) proximo.cliente = null;
-  if ('veiculo_id' in campos && campos.veiculo_id === null) proximo.veiculo = null;
+  if ('placa' in campos) proximo.placa = campos.placa ?? null;
+  if ('valor_centavos' in campos) proximo.valor_centavos = campos.valor_centavos ?? null;
+  if ('forma_pagamento' in campos) proximo.forma_pagamento = campos.forma_pagamento ?? null;
 
   return proximo;
 }

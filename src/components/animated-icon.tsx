@@ -10,7 +10,7 @@ import { Colors } from '@/constants/theme';
 const DURATION = 600;
 
 /**
- * Abertura animada: o ícone do GuinchoCheck sobre o azul-marinho, no mesmo tamanho da abertura nativa (`imageWidth`
+ * Abertura animada: o ícone do GruaCheck sobre o azul-marinho, no mesmo tamanho da abertura nativa (`imageWidth`
  * do plugin `expo-splash-screen` em `app.json`), que some com a animação quando a tela carrega.
  */
 export function AnimatedSplashOverlay() {

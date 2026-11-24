@@ -1,5 +1,5 @@
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { CampoFormulario } from '@/components/campo-formulario';
@@ -9,8 +9,10 @@ import { Alturas, Fontes, Raios, Spacing } from '@/constants/theme';
 import type { CamposDoChecklist } from '@/hooks/use-checklist';
 import { useTheme } from '@/hooks/use-theme';
 import { consumirSelecaoPendente } from '@/services/selecao-pendente';
-import type { Checklist, Cliente, Veiculo } from '@/types/api';
-import { formatarCpfCnpj, formatarPlaca, formatarTelefone } from '@/utils/formatadores';
+import type { Checklist, Cliente, FormaPagamento } from '@/types/api';
+import { formatarCpfCnpj, formatarPlaca, formatarTelefone, juntarPreenchidos, nomeDoCliente, normalizarPlaca, placaValida } from '@/utils/formatadores';
+import { centavosDeDigitos, LIMITE_EM_CENTAVOS, mascaraDeReais } from '@/utils/dinheiro';
+import { ROTULO_DA_FORMA } from '@/utils/financeiro';
 import type { ErrosDoPasso } from '@/utils/checklist';
 
 import { SeletorRegistro } from './seletor-registro';
@@ -22,13 +24,18 @@ const OPCOES_ACOMPANHA: Opcao<Resposta>[] = [
   { valor: 'nao', rotulo: 'Não' },
 ];
 
+const OPCOES_FORMA: Opcao<FormaPagamento | null>[] = [
+  { valor: null, rotulo: 'A definir' },
+  ...(Object.keys(ROTULO_DA_FORMA) as FormaPagamento[]).map((forma) => ({ valor: forma as FormaPagamento | null, rotulo: ROTULO_DA_FORMA[forma] })),
+];
+
 interface PassoDadosProps {
   checklist: Checklist;
   alterar: (campos: CamposDoChecklist, local?: Partial<Checklist>) => void;
   erros: ErrosDoPasso;
 }
 
-/** Passo 1: motorista e caminhão (preenchidos), cliente, veículo, local de retirada, destino e acompanhamento. */
+/** Passo 1: motorista e caminhão (preenchidos), cliente, placa, local de retirada, destino e acompanhamento; na retirada, também o valor e a forma de pagamento. */
 export function PassoDados({ checklist, alterar, erros }: PassoDadosProps) {
   const router = useRouter();
 
@@ -49,25 +56,44 @@ export function PassoDados({ checklist, alterar, erros }: PassoDadosProps) {
     [alterar],
   );
 
-  const selecionarVeiculo = useCallback(
-    (veiculo: Veiculo) =>
-      alterar(
-        { veiculo_id: veiculo.id },
-        { veiculo: { id: veiculo.id, placa: veiculo.placa, modelo: veiculo.modelo, cor: veiculo.cor } },
-      ),
-    [alterar],
-  );
-
-  // Ao voltar do cadastro de um novo cliente ou veículo, seleciona o que acabou de ser salvo.
+  // Ao voltar do cadastro de um novo cliente, seleciona o que acabou de ser salvo.
   useFocusEffect(
     useCallback(() => {
       const cliente = consumirSelecaoPendente<Cliente>('cliente');
-      const veiculo = consumirSelecaoPendente<Veiculo>('veiculo');
 
       if (cliente) selecionarCliente(cliente);
-      if (veiculo) selecionarVeiculo(veiculo);
-    }, [selecionarCliente, selecionarVeiculo]),
+    }, [selecionarCliente]),
   );
+
+  // A placa é digitada no próprio campo e só vai para o salvamento automático quando está completa e válida: uma placa
+  // pela metade seria recusada pela API e o campo seria limpo no meio da digitação.
+  const [placa, setPlaca] = useState(checklist.placa ?? '');
+  const [placaFocada, setPlacaFocada] = useState(false);
+  const placaIncompleta = placa !== '' && !placaValida(placa);
+
+  function aoDigitarPlaca(texto: string) {
+    const nova = normalizarPlaca(texto);
+
+    setPlaca(nova);
+
+    if (placaValida(nova)) {
+      alterar({ placa: nova });
+    } else if (nova === '' && checklist.placa) {
+      alterar({ placa: null });
+    }
+  }
+
+  // Ao sair do campo com a placa incompleta, a placa salva é descartada: nunca fica uma placa antiga que a tela não mostra.
+  function aoSairDaPlaca() {
+    setPlacaFocada(false);
+
+    if (placaIncompleta && checklist.placa) {
+      alterar({ placa: null });
+    }
+  }
+
+  // Valor combinado (só na retirada): o texto guarda só os dígitos e a máscara de reais é aplicada ao exibir.
+  const [valor, setValor] = useState(checklist.valor_centavos ? String(checklist.valor_centavos) : '');
 
   const caminhao = checklist.caminhao
     ? `${checklist.caminhao.tipo_plataforma} · ${formatarPlaca(checklist.caminhao.placa)}`
@@ -83,23 +109,29 @@ export function PassoDados({ checklist, alterar, erros }: PassoDadosProps) {
       <SeletorRegistro
         tipo="cliente"
         rotulo="Cliente"
-        resumo={checklist.cliente?.nome}
+        resumo={checklist.cliente ? nomeDoCliente(checklist.cliente.nome) : undefined}
         detalhe={
-          checklist.cliente ? `${formatarCpfCnpj(checklist.cliente.documento)} · ${formatarTelefone(checklist.cliente.telefone)}` : undefined
+          checklist.cliente
+            ? juntarPreenchidos([formatarCpfCnpj(checklist.cliente.documento), formatarTelefone(checklist.cliente.telefone)]) || undefined
+            : undefined
         }
         erro={erros.cliente_id}
         onSelecionar={(registro) => selecionarCliente(registro as Cliente)}
+        onLimpar={() => alterar({ cliente_id: null })}
         onCadastrarNovo={() => router.push('/checklists/cliente?selecionar=1')}
       />
 
-      <SeletorRegistro
-        tipo="veiculo"
-        rotulo="Veículo do cliente"
-        resumo={checklist.veiculo ? `${checklist.veiculo.modelo} · ${formatarPlaca(checklist.veiculo.placa)}` : undefined}
-        detalhe={checklist.veiculo?.cor}
-        erro={erros.veiculo_id}
-        onSelecionar={(registro) => selecionarVeiculo(registro as Veiculo)}
-        onCadastrarNovo={() => router.push('/checklists/veiculo?selecionar=1')}
+      <CampoFormulario
+        rotulo="Placa do veículo"
+        value={formatarPlaca(placa)}
+        onChangeText={aoDigitarPlaca}
+        onFocus={() => setPlacaFocada(true)}
+        onBlur={aoSairDaPlaca}
+        erro={erros.placa ?? (placaIncompleta && !placaFocada ? 'Placa incompleta ou inválida.' : undefined)}
+        ajuda="Obrigatória. Formato antigo (ABC-1234) ou Mercosul (ABC1D23)."
+        autoCapitalize="characters"
+        autoCorrect={false}
+        maxLength={8}
       />
 
       <CampoFormulario
@@ -127,6 +159,34 @@ export function PassoDados({ checklist, alterar, erros }: PassoDadosProps) {
         onChange={(valor) => alterar({ cliente_acompanha: valor === null ? null : valor === 'sim' })}
         erro={erros.cliente_acompanha}
       />
+
+      {checklist.tipo === 'retirada' ? (
+        <>
+          <CampoFormulario
+            rotulo="Valor do serviço"
+            value={valor === '' ? '' : mascaraDeReais(valor)}
+            onChangeText={(texto) => {
+              const digitos = texto.replace(/\D/g, '').slice(0, 9);
+              const centavos = Math.min(centavosDeDigitos(digitos), LIMITE_EM_CENTAVOS);
+
+              setValor(centavos > 0 ? String(centavos) : '');
+              alterar({ valor_centavos: centavos > 0 ? centavos : null });
+            }}
+            placeholder="R$ 0,00"
+            keyboardType="number-pad"
+            erro={erros.valor_centavos}
+            ajuda="Opcional. Fica no financeiro da operação (retirada e entrega)."
+          />
+
+          <SeletorOpcoes
+            rotulo="Forma de pagamento"
+            opcoes={OPCOES_FORMA}
+            valor={checklist.forma_pagamento}
+            onChange={(forma) => alterar({ forma_pagamento: forma })}
+            erro={erros.forma_pagamento}
+          />
+        </>
+      ) : null}
     </View>
   );
 }

@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
 import { Botao } from '@/components/botao';
 import { CabecalhoTela } from '@/components/cabecalho-tela';
 import { CampoFormulario } from '@/components/campo-formulario';
+import { RolagemComTeclado } from '@/components/rolagem-com-teclado';
 import { ThemedText } from '@/components/themed-text';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -60,7 +61,7 @@ export default function TrocarSenhaScreen() {
     <View style={[estilos.tela, { backgroundColor: theme.background }]}>
       <CabecalhoTela titulo="Trocar senha" aoVoltar={obrigatoria ? undefined : () => router.back()} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={estilos.tela}>
-        <ScrollView contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled">
+        <RolagemComTeclado contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled">
           <View style={estilos.cartao}>
             <ThemedText themeColor="textSecondary">
               {obrigatoria
@@ -121,7 +122,7 @@ export default function TrocarSenhaScreen() {
                 )}
               </View>
             </View>
-          </ScrollView>
+          </RolagemComTeclado>
         </KeyboardAvoidingView>
     </View>
   );

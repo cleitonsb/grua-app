@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Linking, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Botao } from '@/components/botao';
@@ -8,6 +8,7 @@ import { CampoFormulario } from '@/components/campo-formulario';
 import { FotoAmpliada, MiniaturaFoto, MiniaturaLocal } from '@/components/checklist/miniatura-foto';
 import { FormularioTela } from '@/components/formulario-tela';
 import { Icone } from '@/components/icone';
+import { RolagemComTeclado } from '@/components/rolagem-com-teclado';
 import { ThemedText } from '@/components/themed-text';
 import { Alturas, Fontes, Spacing } from '@/constants/theme';
 import { useCatalogo } from '@/hooks/use-catalogo';
@@ -190,7 +191,7 @@ export default function FotoScreen() {
   return (
     <View style={[estilos.tela, { backgroundColor: theme.marinhoProfundo }]}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={estilos.tela}>
-        <ScrollView contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled" bounces={false}>
+        <RolagemComTeclado contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled" bounces={false}>
           <View style={[estilos.escuro, { paddingTop: insets.top + Spacing.three }]}>
             <View style={estilos.topo}>
               <Pressable
@@ -334,7 +335,7 @@ export default function FotoScreen() {
               <Botao titulo={editavel ? 'Concluir' : 'Fechar'} onPress={() => void concluir()} desabilitado={salvando} />
             ) : null}
           </View>
-        </ScrollView>
+        </RolagemComTeclado>
       </KeyboardAvoidingView>
 
       <FotoAmpliada foto={ampliada} onFechar={() => setAmpliada(undefined)} onRemover={editavel ? (foto) => void remover(foto) : undefined} />
